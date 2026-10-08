@@ -1,0 +1,34 @@
+import { test,expect } from '@playwright/test';
+const ready=Boolean(process.env.TEST_LEARNER_A_EMAIL&&process.env.TEST_LEARNER_A_PASSWORD&&process.env.TEST_ADMIN_EMAIL&&process.env.TEST_ADMIN_PASSWORD);
+test.skip(!ready,'Live test accounts are required');
+test('learner path, lesson and progress on desktop and mobile',async({page})=>{
+ await page.goto('/login');
+ await page.getByLabel('Email').fill(process.env.TEST_LEARNER_A_EMAIL!);
+ await page.getByLabel('Password').fill(process.env.TEST_LEARNER_A_PASSWORD!);
+ await page.getByRole('button',{name:'Sign in'}).click();
+ await expect(page.getByRole('heading',{name:'Think in Outcomes'})).toBeVisible();
+ await page.screenshot({path:`artifacts/screenshots/${test.info().project.name}-path.png`,fullPage:true});
+ await page.getByRole('link',{name:/Product Vision/}).first().click();
+ await expect(page.getByRole('heading',{name:'Product Vision'})).toBeVisible();
+ await page.screenshot({path:`artifacts/screenshots/${test.info().project.name}-lesson.png`,fullPage:true});
+ await page.getByRole('button',{name:/Continue/}).click();
+ await expect(page.getByRole('link',{name:/Product Vision vs. Mission/})).toBeVisible();
+ await page.getByRole('button',{name:/Continue/}).click();
+ await page.getByRole('button',{name:/Ship a streak counter/}).click();
+ await expect(page.getByText(/lists features/)).toBeVisible();
+ await page.getByRole('button',{name:/Help designers turn fragmented/}).click();
+ await page.getByRole('button',{name:/Continue/}).click();
+ await page.getByLabel('Your vision direction').fill('Working designers benefit when scattered learning turns into clearer choices. They can explain a design trade-off using evidence.');
+ await page.getByRole('button',{name:/Complete lesson/}).click();
+ await expect(page.getByText('One idea put into practice.')).toBeVisible();
+ await page.screenshot({path:`artifacts/screenshots/${test.info().project.name}-completion.png`,fullPage:true});
+ await page.goto('/progress');await expect(page.getByRole('heading',{name:'Every good step counts.'})).toBeVisible();
+ await page.screenshot({path:`artifacts/screenshots/${test.info().project.name}-progress.png`,fullPage:true});
+});
+test('admin editor is available to an Admin account',async({page})=>{
+ await page.goto('/login');await page.getByLabel('Email').fill(process.env.TEST_ADMIN_EMAIL!);await page.getByLabel('Password').fill(process.env.TEST_ADMIN_PASSWORD!);await page.getByRole('button',{name:'Sign in'}).click();
+ await page.goto('/admin/lessons/10000000-0000-4000-8000-000000000012');
+ await expect(page.getByRole('heading',{name:'Product Vision'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Publish'}).first()).toBeVisible();
+ await page.screenshot({path:`artifacts/screenshots/${test.info().project.name}-admin-editor.png`,fullPage:true});
+});
