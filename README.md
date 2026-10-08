@@ -65,3 +65,4 @@ For visual layout checks without a database, run `npm run dev`, then `node scrip
 - The current Admin editor edits and republishes the pilot lesson; adding new lesson identities and changing curriculum manifests needs a later authoring workflow.
 - External article availability and editorial suitability still need curator review. Opening an external resource never grants completion.
 - Live Supabase migration, access tests, and authenticated end-to-end tests remain pending until database access and disposable test accounts are available.
+- `npm audit --omit=dev` reports no production dependency advisories. The full audit reports five high-severity advisories in the development-only Next ESLint dependency chain; no patched `braces` release was available when this lockfile was created.
