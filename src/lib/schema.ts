@@ -14,3 +14,10 @@ export async function curriculumAvailable(db: Database): Promise<boolean> {
   if (error) throw error;
   return true;
 }
+
+export async function threeLevelAvailable(db: Database): Promise<boolean> {
+ const {error}=await db.from('curriculum_nodes').select('id,is_required').limit(1);
+ if(isMissingCurriculum(error)||error?.code==='PGRST204'||error?.code==='42703')return false;
+ if(error)throw error;
+ return true;
+}

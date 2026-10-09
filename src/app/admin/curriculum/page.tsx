@@ -4,7 +4,10 @@ import { AdminTree } from '@/components/AdminTree';
 import Link from 'next/link';
 import { curriculumAvailable } from '@/lib/schema';
 import { PILOT_UNIT_ID } from '@/lib/data';
+import { redirect } from 'next/navigation';
+import { setupData } from '@/lib/setup';
 export default async function Curriculum(){
+ if((await setupData()).ready)redirect('/admin/setup/domains');
  const {db}=await adminContext();
  if(!await curriculumAvailable(db)){
   const [{data:lessons,error:lessonError},{data:previews,error:previewError}]=await Promise.all([

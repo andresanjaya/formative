@@ -9,7 +9,7 @@ export const PILOT_SEQUENCE=[
  '60000000-0000-4000-8000-000000000003',
  '60000000-0000-4000-8000-000000000004',CHECKPOINT_ID
 ];
-export type CurriculumNode={id:string;parent_id:string|null;node_type:string;title:string;slug:string;short_description:string;icon:string;position:number;status:string;is_learnable:boolean;published_revision_id:string|null};
+export type CurriculumNode={id:string;parent_id:string|null;node_type:string;title:string;slug:string;short_description:string;icon:string|null;position:number;status:string;is_learnable:boolean;published_revision_id:string|null};
 
 export async function loadCurriculum(){
  const {db,user}=await learnerContext();
@@ -28,6 +28,12 @@ export async function loadCurriculum(){
 export function descendants(nodes:CurriculumNode[],id:string):CurriculumNode[]{
  const children=nodes.filter(n=>n.parent_id===id);
  return children.flatMap(child=>[child,...descendants(nodes,child.id)]);
+}
+
+export function nodeHref(nodes:CurriculumNode[],id:string):string{
+ const path:CurriculumNode[]=[];let node=nodes.find(n=>n.id===id);const seen=new Set<string>();
+ while(node&&!seen.has(node.id)){path.unshift(node);seen.add(node.id);node=nodes.find(n=>n.id===node?.parent_id);}
+ return path.length&&path.every(n=>n.node_type!=='lesson')?'/learn/'+path.map(n=>n.slug).join('/'):'/learn/'+id;
 }
 
 export function nodeProgress(nodes:CurriculumNode[],id:string,completed:Set<string>,required:Set<string>){
