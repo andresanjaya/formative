@@ -4,9 +4,13 @@ import { Shell } from '@/components/Shell';
 import { IntroComplete } from '@/components/IntroComplete';
 import { UpgradeButton } from '@/components/UpgradeButton';
 import { loadCurriculum, nodeProgress } from '@/lib/curriculum-data';
+import { learnerContext } from '@/lib/auth';
+import { curriculumAvailable } from '@/lib/schema';
 
 export default async function NodePage({params}:{params:Promise<{nodeId:string}>}){
  const {nodeId}=await params;
+ const {db:initialDb}=await learnerContext();
+ if(!await curriculumAvailable(initialDb))notFound();
  const {db,user,nodes,completions,required}=await loadCurriculum();
  const node=nodes.find(n=>n.id===nodeId);if(!node)notFound();
  const children=nodes.filter(n=>n.parent_id===nodeId).sort((a,b)=>a.position-b.position);

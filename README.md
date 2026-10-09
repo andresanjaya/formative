@@ -1,6 +1,12 @@
-# Formative MVP 1
+# Formative
 
-Responsive Next.js learning app for the “Think in Outcomes” pilot unit. Product Vision is the single published, completable lesson. The other five path labels are previews and do not enter the progress denominator.
+Responsive Next.js learning app for the “Think in Outcomes” pilot unit. The code supports the expanded curriculum; Product Vision remains usable against the original database schema while the new migrations are pending.
+
+## Curriculum schema rollout
+
+The expanded curriculum requires the migrations after `202610080001_initial.sql` in filename order. Until they are applied, the app detects the missing `curriculum_nodes` table and serves the existing Product Vision path, lesson, review, progress, and curator editor. Checkpoint and artifacts open after the expanded schema is installed. Other database errors still surface normally.
+
+The local Supabase project has not been migrated to the expanded schema. Live learner and Admin tests remain pending as requested; local typecheck, lint, tests, and build verify the compatibility code only. In the original schema, Product Vision is the single published, completable lesson; the other five path labels are previews and do not enter the progress denominator.
 
 ## Implemented
 

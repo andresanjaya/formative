@@ -2,8 +2,13 @@
 import { Shell } from '@/components/Shell';
 import { UpgradeButton } from '@/components/UpgradeButton';
 import { loadCurriculum, PILOT_SEQUENCE } from '@/lib/curriculum-data';
+import { learnerContext } from '@/lib/auth';
+import { curriculumAvailable } from '@/lib/schema';
+import { LegacyLearn } from '@/components/LegacyLearn';
 
 export default async function Learn(){
+ const {db}=await learnerContext();
+ if(!await curriculumAvailable(db))return <LegacyLearn/>;
  const {nodes,completions,attempts,required,receipt,legacyEnrollment}=await loadCurriculum();
  const sequence=PILOT_SEQUENCE.map(id=>nodes.find(n=>n.id===id)).filter((n):n is NonNullable<typeof n>=>Boolean(n));
  const next=sequence.find(n=>required.has(n.id)&&!completions.has(n.id));

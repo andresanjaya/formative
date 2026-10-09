@@ -2,8 +2,11 @@
 import { learnerContext } from '@/lib/auth';
 import { Shell } from '@/components/Shell';
 import { ReviewQueue } from '@/components/ReviewQueue';
+import { curriculumAvailable } from '@/lib/schema';
+import { LegacyReview } from '@/components/LegacyReview';
 export default async function Review(){
  const {db}=await learnerContext();
+ if(!await curriculumAvailable(db))return <LegacyReview/>;
  const {data,error}=await db.rpc('review_queue');
  if(error)throw error;
  return <Shell title="Review"><div className="tag">REMEMBER WHAT MATTERS</div><h1>Daily review</h1><p className="muted">Review a few useful decisions at a time. Corrections are unlimited; your first answer is kept separately.</p>
