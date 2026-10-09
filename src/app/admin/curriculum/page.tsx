@@ -1,5 +1,14 @@
-import Link from 'next/link';
-import { adminContext } from '@/lib/auth';
+﻿import { adminContext } from '@/lib/auth';
 import { Shell } from '@/components/Shell';
-import { PILOT_UNIT_ID } from '@/lib/data';
-export default async function Curriculum(){const {db}=await adminContext();const [{data:lesson},{data:previews},{data:revisions}]=await Promise.all([db.from('lessons').select('id,title,position,published_revision_id').order('position'),db.from('path_previews').select('title,position').eq('unit_id',PILOT_UNIT_ID),db.from('lesson_revisions').select('lesson_id,state,revision_number')]);const items=[...(lesson||[]).map(l=>({...l,editable:true})),...(previews||[]).map(p=>({...p,editable:false}))].sort((a,b)=>a.position-b.position);return <Shell title="Curriculum" admin><div className="tag">PRODUCT DESIGN FOUNDATIONS</div><h1>Think in Outcomes</h1><p className="muted">One complete pilot lesson. Preview labels are not part of the published progress denominator.</p><div className="card space"><div className="stack">{items.map((item,i)=><div className="row" key={i} style={{padding:'14px 0',borderBottom:'1px solid var(--border)'}}><div><strong>{item.position}. {item.title}</strong><div className="small muted">{item.editable&&'id'in item?revisions?.some(r=>r.lesson_id===item.id&&r.state==='draft')?'Draft':'Published':'Coming next · Preview label'}</div></div>{item.editable&&'id'in item&&<Link className="button secondary" href={`/admin/lessons/${item.id}`}>Edit</Link>}</div>)}</div></div></Shell>}
+import { AdminTree } from '@/components/AdminTree';
+export default async function Curriculum(){
+ const {db}=await adminContext();
+ const [{data:nodes,error},{data:revisions}]=await Promise.all([
+  db.from('curriculum_nodes').select('id,parent_id,node_type,title,slug,short_description,icon,position,status,is_learnable,published_revision_id').order('position'),
+  db.from('lesson_revisions').select('lesson_id')
+ ]);
+ if(error)throw error;
+ const contentIds=new Set((revisions||[]).map(r=>r.lesson_id));
+ return <Shell title="Curriculum" admin><div className="tag">PRODUCT DESIGN FOUNDATIONS</div><h1>Curriculum</h1><p className="muted">Build any depth of learning content. Publishing a parent does not publish its draft children.</p><AdminTree nodes={(nodes||[]).map(n=>({...n,has_content:contentIds.has(n.id)}))}/></Shell>;
+}
+

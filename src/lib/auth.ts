@@ -17,7 +17,8 @@ export async function learnerContext() {
 
 export async function adminContext() {
   const context = await learnerContext();
-  const { data } = await context.db.rpc('is_admin');
+  const { data, error } = await context.db.rpc('is_admin');
+  if (error) throw new Error('Curator permissions could not be checked. Please try again.');
   if (!data) redirect('/admin/unauthorized');
   return context;
 }

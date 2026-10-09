@@ -11,7 +11,15 @@ const actions = z.discriminatedUnion('action', [
   z.object({ action:z.literal('reflection'), attemptId:uuid, body:z.string().min(1).max(4000) }),
   z.object({ action:z.literal('complete'), attemptId:uuid, requestId:uuid }),
   z.object({ action:z.literal('saveDraft'), lessonId:uuid, expected:z.number().int().min(0), outcome:z.string().max(500), content:z.array(z.unknown()).max(30), questions:z.array(z.unknown()).max(20), review:z.array(z.unknown()).max(20), resources:z.array(z.unknown()).max(20), keys:z.array(z.unknown()).max(40) }),
+  z.object({ action:z.literal('saveNodeDraft'), nodeId:uuid, expected:z.number().int().min(0), outcome:z.string().max(500), introduction:z.string().max(2000), content:z.array(z.unknown()).max(30), questions:z.array(z.unknown()).max(20), review:z.array(z.unknown()).max(20), resources:z.array(z.unknown()).max(20), reflection:z.string().max(1000), minutes:z.number().int().min(1).max(180), policy:z.enum(['intro','lesson','checkpoint']), fields:z.array(z.string()).max(20), rubric:z.array(z.string()).max(20), keys:z.array(z.unknown()).max(40) }),
   z.object({ action:z.literal('publish'), lessonId:uuid, expected:z.number().int().min(1) }),
+  z.object({ action:z.literal('createNode'), parentId:uuid.nullable(), nodeType:z.enum(['domain','section','topic','lesson']), title:z.string().min(2).max(120), slug:z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/), description:z.string().max(500), learnable:z.boolean() }),
+  z.object({ action:z.literal('moveNode'), nodeId:uuid, parentId:uuid.nullable(), position:z.number().int().min(1) }),
+  z.object({ action:z.literal('updateNode'), nodeId:uuid, title:z.string().min(2).max(120), slug:z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/), description:z.string().max(500), nodeType:z.enum(['domain','section','topic','lesson']), learnable:z.boolean(), status:z.enum(['draft','published','archived']) }),
+  z.object({ action:z.literal('completeIntro'), nodeId:uuid }),
+  z.object({ action:z.literal('upgradeCurriculum') }),
+  z.object({ action:z.literal('checkpointDraft'), nodeId:uuid, projectName:z.string().max(150), answers:z.record(z.string(),z.string().max(4000)) }),
+  z.object({ action:z.literal('checkpointSubmit'), nodeId:uuid, rubric:z.record(z.string(),z.enum(['needs_work','partly_clear','clear'])) }),
   z.object({ action:z.literal('reviewAnswer'), lessonId:uuid, questionId:z.string().max(100), optionId:z.string().max(100) }),
   z.object({ action:z.literal('reviewComplete'), lessonId:uuid, occurrence:z.number().int().min(1) }),
 ]);
@@ -34,7 +42,15 @@ export async function POST(request: NextRequest) {
     case 'reflection': fn='save_reflection'; args={p_attempt:input.attemptId,p_body:input.body}; break;
     case 'complete': fn='complete_lesson'; args={p_attempt:input.attemptId,p_idempotency:input.requestId}; break;
     case 'saveDraft': fn='admin_save_draft'; args={p_lesson:input.lessonId,p_expected:input.expected,p_outcome:input.outcome,p_content:input.content,p_questions:input.questions,p_review:input.review,p_resources:input.resources,p_keys:input.keys}; break;
+    case 'saveNodeDraft': fn='admin_save_node_draft'; args={p_node:input.nodeId,p_expected:input.expected,p_outcome:input.outcome,p_introduction:input.introduction,p_content:input.content,p_questions:input.questions,p_review:input.review,p_resources:input.resources,p_reflection:input.reflection,p_minutes:input.minutes,p_policy:input.policy,p_fields:input.fields,p_rubric:input.rubric,p_keys:input.keys}; break;
     case 'publish': fn='admin_publish'; args={p_lesson:input.lessonId,p_expected:input.expected}; break;
+    case 'createNode': fn='admin_create_node'; args={p_parent:input.parentId,p_type:input.nodeType,p_title:input.title,p_slug:input.slug,p_description:input.description,p_learnable:input.learnable}; break;
+    case 'moveNode': fn='admin_move_node'; args={p_node:input.nodeId,p_parent:input.parentId,p_position:input.position}; break;
+    case 'updateNode': fn='admin_update_node'; args={p_node:input.nodeId,p_title:input.title,p_slug:input.slug,p_description:input.description,p_type:input.nodeType,p_learnable:input.learnable,p_status:input.status}; break;
+    case 'completeIntro': fn='complete_node_intro'; args={p_node:input.nodeId}; break;
+    case 'upgradeCurriculum': fn='upgrade_curriculum'; args={}; break;
+    case 'checkpointDraft': fn='save_checkpoint_draft'; args={p_node:input.nodeId,p_project:input.projectName,p_answers:input.answers}; break;
+    case 'checkpointSubmit': fn='submit_checkpoint'; args={p_node:input.nodeId,p_rubric:input.rubric}; break;
     case 'reviewAnswer': fn='submit_review_answer'; args={p_lesson:input.lessonId,p_question:input.questionId,p_option:input.optionId}; break;
     case 'reviewComplete': fn='complete_review'; args={p_lesson:input.lessonId,p_occurrence:input.occurrence}; break;
   }

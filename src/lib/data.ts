@@ -17,15 +17,18 @@ export async function loadPath() {
 
 export async function loadLesson(id: string) {
   const { db, user } = await learnerContext();
-  const { data: lesson } = await db.from('lessons').select('id,title,published_revision_id').eq('id',id).maybeSingle();
-  if (!lesson?.published_revision_id) return null;
-  const [{ data: revision }, { data: attempt }, { data: completion }, { data: receipt }] = await Promise.all([
-    db.from('lesson_revisions').select('id,lesson_id,revision_number,outcome,content,question_public,resource_cards,estimated_minutes').eq('id',lesson.published_revision_id).single(),
-    db.from('attempts').select('id,revision_id,current_step,status').eq('lesson_id',id).eq('user_id',user.id).eq('status','in_progress').maybeSingle(),
+  const { data: lesson } = await db.from('curriculum_nodes').select('id,title,published_revision_id,is_learnable').eq('id',id).eq('status','published').maybeSingle();
+  if (!lesson?.published_revision_id || !lesson.is_learnable) return null;
+  const {data:enrollment}=await db.from('enrollments').select('curriculum_version_id').eq('user_id',user.id).maybeSingle();
+  const {data:version}=enrollment?.curriculum_version_id?await db.from('curriculum_versions').select('manifest').eq('id',enrollment.curriculum_version_id).maybeSingle():{data:null};
+  if(!Array.isArray(version?.manifest)||!version.manifest.includes(id))return null;
+  const { data: attempt } = await db.from('attempts').select('id,revision_id,current_step,status').eq('lesson_id',id).eq('user_id',user.id).eq('status','in_progress').maybeSingle();
+  const [{ data: revision }, { data: completion }, { data: receipt }] = await Promise.all([
+    db.from('lesson_revisions').select('id,lesson_id,revision_number,outcome,introduction,content,question_public,resource_cards,reflection_prompt,completion_policy,estimated_minutes').eq('id',attempt?.revision_id||lesson.published_revision_id).single(),
     db.from('lesson_completions').select('completed_at').eq('lesson_id',id).eq('user_id',user.id).maybeSingle(),
     db.rpc('progress_receipt')
   ]);
   let answers:{question_id:string;correct:boolean}[]=[]; let reflection='';
   if(attempt){const [{data:a},{data:r}]=await Promise.all([db.from('attempt_answers').select('question_id,correct').eq('attempt_id',attempt.id),db.from('reflections').select('body').eq('attempt_id',attempt.id).maybeSingle()]);answers=a||[];reflection=r?.body||'';}
-  return revision ? { lesson, revision, attempt, completion, answers, reflection, receipt } : null;
+  return revision?.completion_policy==='lesson' ? { lesson, revision, attempt, completion, answers, reflection, receipt } : null;
 }
