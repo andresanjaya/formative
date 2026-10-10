@@ -22,6 +22,7 @@ const actions = z.discriminatedUnion('action', [
   z.object({action:z.literal('setupTransition'),nodeId:uuid,transition:z.enum(['archive','restore','publish','delete']),confirmChildren:z.boolean()}),
   z.object({ action:z.literal('completeIntro'), nodeId:uuid }),
   z.object({ action:z.literal('upgradeCurriculum') }),
+  z.object({ action:z.literal('selectPath'), domainId:uuid }),
   z.object({ action:z.literal('checkpointDraft'), nodeId:uuid, projectName:z.string().max(150), answers:z.record(z.string(),z.string().max(4000)) }),
   z.object({ action:z.literal('checkpointSubmit'), nodeId:uuid, rubric:z.record(z.string(),z.enum(['needs_work','partly_clear','clear'])) }),
   z.object({ action:z.literal('reviewAnswer'), lessonId:uuid, questionId:z.string().max(100), optionId:z.string().max(100) }),
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
     case 'setupTransition': fn='admin_setup_transition'; args={p_node:input.nodeId,p_action:input.transition,p_confirm_children:input.confirmChildren}; break;
     case 'completeIntro': fn='complete_node_intro'; args={p_node:input.nodeId}; break;
     case 'upgradeCurriculum': fn='upgrade_curriculum'; args={}; break;
+    case 'selectPath': fn='select_learning_path'; args={p_domain:input.domainId}; break;
     case 'checkpointDraft': fn='save_checkpoint_draft'; args={p_node:input.nodeId,p_project:input.projectName,p_answers:input.answers}; break;
     case 'checkpointSubmit': fn='submit_checkpoint'; args={p_node:input.nodeId,p_rubric:input.rubric}; break;
     case 'reviewAnswer': fn='submit_review_answer'; args={p_lesson:input.lessonId,p_question:input.questionId,p_option:input.optionId}; break;

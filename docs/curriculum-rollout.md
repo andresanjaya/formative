@@ -13,6 +13,8 @@ Apply migrations `202610080001` through `202610090005` in filename order to a ba
 - Adds enum levels and publication status, required state, cover image, archive timestamp, typed block validation, review intervals, and Admin-only setup RPCs.
 - Verifies attempt, completion, review, resource, and revision counts, plus Product Vision's published node, before the migration finishes.
 
+After `202610090005`, run the **entire** `20261010_seed_product_design_roadmap.sql` file in the SQL Editor. Do not select only the insert statements. The supplied seed needed matching `lessons` rows because `curriculum_nodes.id` references `lessons.id`. The corrected migration inserts those rows before each level, preserves adopted IDs and learner history, and switches paths through `select_learning_path(uuid)` in one transaction. Its seed runs in one `DO` statement with no staging table. If a previous run left an open failed transaction, run `rollback;` first. Then run `supabase/tests/learning_paths.sql` to check counts and foreign keys.
+
 The Admin setup UI detects a missing migration and displays the required step. Learner flows continue to use the original schema until the expanded migrations are installed.
 
 ## Verification queries

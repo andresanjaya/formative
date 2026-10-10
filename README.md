@@ -21,7 +21,7 @@ The local Supabase project has not been migrated to the expanded schema. Live le
 ## Local setup
 
 1. Use Node.js 20.9 or newer. Run `npm ci`.
-2. Create a Supabase project. In its SQL Editor, run [`supabase/migrations/202610080001_initial.sql`](supabase/migrations/202610080001_initial.sql) and then [`supabase/seed.sql`](supabase/seed.sql). Apply in this order. The seed is repeatable.
+2. Create a Supabase project. In its SQL Editor, apply every file in [`supabase/migrations`](supabase/migrations) in filename order, starting with `202610080001_initial.sql` and ending with `20261010_seed_product_design_roadmap.sql`. Run one complete file at a time and stop on the first error. The `202610080002_legacy_pilot_data.sql` migration includes the pilot seed; do not also run `supabase/seed.sql` on a fresh project.
 3. Copy `.env.example` to `.env.local` and set the project URL, publishable key, and `NEXT_PUBLIC_APP_ORIGIN=http://localhost:3000`. The publishable key is designed for browser use. Keep database passwords and service credentials out of `NEXT_PUBLIC_*` variables and source control.
 4. In Supabase Auth, configure the site URL as `http://localhost:3000` and allow `http://localhost:3000/auth/callback` as a redirect URL. Enable email/password authentication and configure email delivery for confirmations.
 5. Run `npm run dev` (`npm.cmd run dev` in PowerShell with script execution disabled), open `http://localhost:3000`, create an account, confirm the email if required, and choose a learning timezone in onboarding.

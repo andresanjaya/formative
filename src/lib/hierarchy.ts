@@ -1,4 +1,4 @@
-export type HierarchyNode={id:string;parent_id:string|null;slug:string;status?:string;is_required?:boolean;published_revision_id?:string|null};
+export type HierarchyNode={id:string;parent_id:string|null;slug:string;status?:string;is_required?:boolean;is_learnable?:boolean;published_revision_id?:string|null};
 
 export function hierarchyPath<T extends HierarchyNode>(nodes:T[],node:T):T[]{
  const result:T[]=[];const seen=new Set<string>();let current:T|undefined=node;
@@ -13,6 +13,6 @@ export function resolvePublishedPath<T extends HierarchyNode>(nodes:T[],slugs:st
 }
 
 export function requiredDescendantProgress<T extends HierarchyNode>(nodes:T[],root:T,completed:Set<string>){
- const eligible=nodes.filter(n=>n.id!==root.id&&n.is_required&&n.published_revision_id&&hierarchyPath(nodes,n).some(p=>p.id===root.id)&&hierarchyPath(nodes,n).every(p=>p.status==='published'));
+ const eligible=nodes.filter(n=>n.id!==root.id&&n.is_required&&n.is_learnable!==false&&n.published_revision_id&&hierarchyPath(nodes,n).some(p=>p.id===root.id)&&hierarchyPath(nodes,n).every(p=>p.status==='published'));
  return {done:eligible.filter(n=>completed.has(n.id)).length,total:eligible.length};
 }
