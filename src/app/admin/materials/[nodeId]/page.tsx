@@ -4,9 +4,10 @@ import { Shell } from '@/components/Shell';
 import { NodeEditor } from '@/components/NodeEditor';
 import { ancestors,levelFor,ownRevision,setupData } from '@/lib/setup';
 import { adminContext } from '@/lib/auth';
+import { Card, CardContent } from '@/components/ui/card';
 export default async function Material({params,searchParams}:{params:Promise<{nodeId:string}>;searchParams:Promise<{tab?:string;preview?:string}>}){
  const [{nodeId},query]=await Promise.all([params,searchParams]);const data=await setupData();
- if(!data.ready)return <Shell title="Learning Materials" admin><div className="card">Apply the curriculum migration to manage materials.</div></Shell>;
+ if(!data.ready)return <Shell title="Learning Materials" admin><Card><CardContent>Apply the curriculum migration to manage materials.</CardContent></Card></Shell>;
  const node=data.nodes.find(n=>n.id===nodeId);if(!node)notFound();const {db}=await adminContext();
  const [{data:editor,error},{data:children}]=await Promise.all([db.rpc('admin_get_lesson',{p_lesson:nodeId}),db.from('curriculum_nodes').select('title,status').eq('parent_id',nodeId)]);
  if(error)throw error;

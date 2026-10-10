@@ -1,4 +1,4 @@
-﻿import { adminContext } from '@/lib/auth';
+import { adminContext } from '@/lib/auth';
 import { Shell } from '@/components/Shell';
 import { AdminTree } from '@/components/AdminTree';
 import Link from 'next/link';
@@ -6,6 +6,7 @@ import { curriculumAvailable } from '@/lib/schema';
 import { PILOT_UNIT_ID } from '@/lib/data';
 import { redirect } from 'next/navigation';
 import { setupData } from '@/lib/setup';
+import { Card, CardContent } from '@/components/ui/card';
 export default async function Curriculum(){
  if((await setupData()).ready)redirect('/admin/setup/domains');
  const {db}=await adminContext();
@@ -16,7 +17,7 @@ export default async function Curriculum(){
   ]);
   if(lessonError)throw lessonError;
   if(previewError)throw previewError;
-  return <Shell title="Curriculum" admin><div className="tag">PRODUCT DESIGN FOUNDATIONS</div><h1>Curriculum</h1><p className="muted">The expanded curriculum is being prepared. The current lesson remains available to edit.</p><div className="stack space">{lessons?.map(lesson=><Link className="card" key={lesson.id} href={'/admin/lessons/'+lesson.id}><h2>{lesson.title}</h2><p className="small muted">{lesson.published_revision_id?'Published lesson':'Draft lesson'} · Open editor →</p></Link>)}{previews?.map(preview=><div className="card" key={preview.id}><h2>{preview.title}</h2><p className="small muted">Available after the curriculum update</p></div>)}</div></Shell>;
+  return <Shell title="Curriculum" admin><div className="tag">PRODUCT DESIGN FOUNDATIONS</div><h1>Curriculum</h1><p className="muted">The expanded curriculum is being prepared. The current lesson remains available to edit.</p><div className="stack space">{lessons?.map(lesson=><Link  key={lesson.id} href={'/admin/lessons/'+lesson.id}><Card className="h-full"><CardContent><h2>{lesson.title}</h2><p className="small muted">{lesson.published_revision_id?'Published lesson':'Draft lesson'} · Open editor →</p></CardContent></Card></Link>)}{previews?.map(preview=><Card key={preview.id}><CardContent><h2>{preview.title}</h2><p className="small muted">Available after the curriculum update</p></CardContent></Card>)}</div></Shell>;
  }
  const [{data:nodes,error},{data:revisions}]=await Promise.all([
   db.from('curriculum_nodes').select('id,parent_id,node_type,title,slug,short_description,icon,position,status,is_learnable,published_revision_id').order('position'),
